@@ -1,0 +1,69 @@
+{
+  "name": "@w1kman/component-lib-boilerplate",
+  "publishConfig": {
+    "registry": "https://npm.pkg.github.com/w1kman"
+  },
+  "version": "0.2.0",
+  "description": "React component library boilerplate",
+  "scripts": {
+    "rollup": "rollup -c",
+    "test": "jest",
+    "storybook": "start-storybook -p 6006",
+    "build-storybook": "build-storybook",
+    "prepack": "npm run rollup"
+  },
+  "author": "Thomas Wikman",
+  "license": "MIT",
+  "devDependencies": {
+    "@babel/core": "^7.18.6",
+    "@babel/preset-env": "^7.18.6",
+    "@babel/preset-react": "^7.18.6",
+    "@babel/preset-typescript": "^7.18.6",
+    "@rollup/plugin-commonjs": "^22.0.1",
+    "@rollup/plugin-node-resolve": "^13.3.0",
+    "@rollup/plugin-typescript": "^8.3.3",
+    "@storybook/addon-actions": "^6.5.9",
+    "@storybook/addon-essentials": "^6.5.9",
+    "@storybook/addon-interactions": "^6.5.9",
+    "@storybook/addon-links": "^6.5.9",
+    "@storybook/builder-webpack5": "^6.5.9",
+    "@storybook/manager-webpack5": "^6.5.9",
+    "@storybook/react": "^6.5.9",
+    "@storybook/testing-library": "^0.0.13",
+    "@types/jest": "^28.1.4",
+    "@types/react": "^18.0.15",
+    "@types/styled-components": "^5.1.25",
+    "babel-jest": "^28.1.2",
+    "babel-loader": "^8.2.5",
+    "identity-obj-proxy": "^3.0.0",
+    "jest": "^28.1.2",
+    "jest-environment-jsdom": "^28.1.2",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "rollup": "^2.76.0",
+    "rollup-plugin-dts": "^4.2.2",
+    "rollup-plugin-peer-deps-external": "^2.2.4",
+    "rollup-plugin-terser": "^7.0.2",
+    "styled-components": "^5.3.5",
+    "tslib": "^2.4.0",
+    "typescript": "^4.7.4",
+    "webpack": "^5.73.0",
+    "@mdx-js/react": "^1.6.22"
+  },
+  "overrides": {
+    "@mdx-js/react": {
+      "react": "$react"
+    }
+  },
+  "peerDependencies": {
+    "react": "^17.0.2 || ^18.2.0",
+    "react-dom": "^17.0.2 || ^18.2.0",
+    "styled-components": "^5.3.5"
+  },
+  "main": "dist/cjs/index.js",
+  "module": "dist/esm/index.js",
+  "files": [
+    "dist"
+  ],
+  "types": "dist/index.d.ts"
+}
