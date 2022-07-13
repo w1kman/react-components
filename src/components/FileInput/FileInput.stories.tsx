@@ -15,12 +15,20 @@ const Template: ComponentStory<typeof FileInput> = (args) => (
   <FileInput {...args} />
 )
 
-export const HelloWorld = Template.bind({});
-HelloWorld.args = {
-  id: "cool-id",
+
+
+export const Normal = Template.bind({});
+Normal.args = {
+  onChange(files) {
+    console.log('onChange payload', files)
+  },
+  onChangeBlob: undefined,
 };
 
-export const ClickMe = Template.bind({});
-ClickMe.args = {
-  children: "Click me!",
+export const FileBlob = Template.bind({});
+FileBlob.args = {
+  onChange: undefined,
+  onChangeBlob(blob) {
+    console.log('onChangeBlob payload', blob)
+  }
 };
