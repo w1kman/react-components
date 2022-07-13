@@ -3,7 +3,7 @@
   "publishConfig": {
     "registry": "https://npm.pkg.github.com/w1kman"
   },
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "React component library boilerplate",
   "scripts": {
     "start": "npm run storybook",
