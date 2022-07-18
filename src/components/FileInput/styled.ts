@@ -2,14 +2,14 @@ import styled from 'styled-components'
 import UploadIcon from '../UploadIcon'
 import InsertDriveFileIcon from '../InsertDriveFileIcon'
 import SimCardError from '../SimCardError'
+import ClearIcon from '../ClearIcon'
 
 export const FileInputContainer = styled.div`
   box-sizing: border-box;
   position: relative;
   display: flex;
   line-height: 1.5em;
-  
-  
+
   &.FileInputContainer-error {
     outline-color: crimson;
   }
@@ -35,19 +35,19 @@ export const FileInputLabel = styled.label`
   padding: 20px;
   opacity: 0.75;
   cursor: pointer;
-  transition: opacity .25s ease-in-out, color .25s ease-in-out, outline-color .25s ease-in-out;
+  transition: opacity 0.25s ease-in-out, color 0.25s ease-in-out, outline-color 0.25s ease-in-out;
   outline: 2px currentColor dashed;
   outline-offset: -2px;
-  
+
   &:hover {
     opacity: 1;
     color: #5b77d2;
   }
-  
+
   .FileInputContainer.FileInputContainer-file & {
     color: #029d5e;
   }
-  
+
   .FileInputContainer.FileInputContainer-error & {
     color: crimson;
   }
@@ -59,21 +59,6 @@ export const FileInputLabel = styled.label`
 
 export const HiddenInput = styled.input`
   display: none;
-`
-export const StyledButton = styled.span`
-  display: inline-block;
-  border: 1px currentColor solid;
-  border-radius: 2px;
-  background-color: transparent;
-  outline: 0;
-  padding: 4px 8px;
-  color: inherit;
-  cursor: pointer;
-  transition: color .25s linear, border-color .25s linear;
-
-  &:hover {
-    color: #5837d0;
-  }
 `
 export const MutedText = styled.span`
   opacity: 0.5;
@@ -93,6 +78,27 @@ export const StyledUploadIcon = styled(UploadIcon)`
 export const StyledFileIcon = styled(InsertDriveFileIcon)`
   font-size: 4em;
 `
+
 export const StyledErrorIcon = styled(SimCardError)`
   font-size: 4em;
 `
+
+export const ClearInputButton = styled.span`
+  border: 0;
+  background-color: transparent;
+  position: absolute;
+  right: 10px;
+  top: 10px;
+  padding: 4px;
+  border-radius: 11px;
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  transition: background-color .25s ease-in-out;
+  color: rgba(0, 0, 0, 0.55);
+  &:hover {
+    background-color: rgba(0, 0, 0, 0.2);
+  }
+`
+
+export const StyledClearIcon = styled(ClearIcon)``

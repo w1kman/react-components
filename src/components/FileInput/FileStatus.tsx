@@ -1,4 +1,10 @@
-import { ErrorMessage, MutedText, StyledErrorIcon, StyledUploadIcon } from './styled'
+import {
+  ErrorMessage,
+  MutedText,
+  StyledErrorIcon,
+  StyledUploadIcon,
+  StyledFileIcon,
+} from './styled'
 import FileMeta from './FileMeta'
 
 interface FileStatusProps {
@@ -9,7 +15,7 @@ interface FileStatusProps {
   dragOver: boolean
 }
 
-export default function FileStatus({file, errorMessage, blobSize, dragOver}: FileStatusProps) {
+export default function FileStatus({ file, errorMessage, blobSize, dragOver }: FileStatusProps) {
   const fileSize = blobSize ? blobSize : file?.size
   if (errorMessage) {
     return (
@@ -23,9 +29,13 @@ export default function FileStatus({file, errorMessage, blobSize, dragOver}: Fil
   if (file) {
     return (
       <>
-        <StyledUploadIcon />
+        <StyledFileIcon />
         <FileMeta name={file?.name} size={fileSize} />
-        <MutedText>{dragOver ? 'Drop file to replace current file' : 'Drag a new file to replace (or click to browse)'}</MutedText>
+        <MutedText>
+          {dragOver
+            ? 'Drop file to replace current file'
+            : 'Drag a new file to replace (or click to browse)'}
+        </MutedText>
       </>
     )
   }

@@ -1,35 +1,46 @@
 import type { ChangeEvent, DragEvent } from 'react'
 import {
-  ErrorMessage,
+  ClearInputButton,
   FileInputContainer,
   FileInputLabel,
   HiddenInput,
-  MutedText,
-  StyledButton,
-  StyledFileIcon,
-  StyledUploadIcon,
+  StyledClearIcon,
 } from './styled'
 import fileSize from 'pretty-bytes'
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useMemo, useRef, useState } from 'react'
 import { nanoid } from 'nanoid'
 import clsx from 'clsx'
 import FileStatus from './FileStatus'
+import { useAsyncEffect } from '../../hooks'
 
-export interface Base64FileBlob {
+export interface FileDataURL {
   name: string
-  raw: string // base64encoded file
+  size: number | null
+  originalSize: number | null
+  type: string
+  dataURL: string
 }
 
 interface FileInputProps {
   id?: string
   maxFileSize?: number
-  onChangeBlob?: (blob: Base64FileBlob | null) => void
-  onChange?: (files: File | null) => void
+  onChangeBlob?: (blob: FileDataURL | null) => void
+  onChange?: (event: ChangeEvent<HTMLInputElement>) => void
   className?: string
   containerClassName?: string
 }
 
-function getFileSizeError(limit: number, subjectFileSize?: number) {
+function fileToDataURL(file: File): Promise<string> {
+  return new Promise((resolve) => {
+    const fileReader = new FileReader()
+    fileReader.onload = () => {
+      resolve(fileReader.result as string)
+    }
+    fileReader.readAsDataURL(file)
+  })
+}
+
+function getFileSizeError(limit: number, subjectFileSize?: number | null) {
   if (limit && subjectFileSize && subjectFileSize > limit) {
     return `File too large (Max: ${fileSize(limit)})`
   }
@@ -39,7 +50,7 @@ function getFileSizeError(limit: number, subjectFileSize?: number) {
 
 export default function FileInput({
   id = 'input-field',
-  maxFileSize = 0,
+  maxFileSize = 2097152, // 2,024.00 Kb (2MB Binary)
   onChangeBlob,
   onChange,
   className,
@@ -54,47 +65,29 @@ export default function FileInput({
     return id || `FileInput-id-${nanoid()}`
   }, [id])
 
-  useEffect(() => {
-    if (value === undefined) {
+  useAsyncEffect(async () => {
+    if (!onChangeBlob || value === undefined) {
       return
     }
-    setBlobSize(null)
-    if (!!onChangeBlob) {
-      if (value === null) {
-        onChangeBlob({name: '', raw: ''})
-        return
-      }
-
-      new Promise<Base64FileBlob>((resolve, reject) => {
-        const fileReader = new FileReader()
-        fileReader.onload = () => {
-          const name = fileReader.result !== null && value ? value.name : ''
-          const raw =
-            fileReader.result !== null ? (fileReader.result as string) : ''
-          const fileBlob = new Blob([raw])
-          setBlobSize(fileBlob.size)
-          const error = getFileSizeError(maxFileSize, fileBlob.size)
-          if (error) {
-            return reject(error)
-          }
-
-          resolve({name, raw})
-        }
-
-        fileReader.readAsDataURL(value)
-      }).then((blob: Base64FileBlob) => {
-        onChangeBlob(blob)
-      }).catch((message) => {
-        setErrorMessage(message)
-      })
+    setErrorMessage('')
+    const dataURL = value ? await fileToDataURL(value) : ''
+    const dataURLSize = value ? new Blob([dataURL]).size : null
+    const error = getFileSizeError(maxFileSize, dataURLSize)
+    setBlobSize(dataURLSize)
+    if (error) {
+      return setErrorMessage(error)
     }
 
-    !!onChange && !errorMessage && onChange(value || null)
+    return onChangeBlob({
+      name: value ? value.name : '',
+      type: value ? value.type : '',
+      originalSize: value ? value.size : null,
+      size: dataURLSize,
+      dataURL: dataURL,
+    })
   }, [value])
 
-  const preventDefault = (
-    event: DragEvent<HTMLElement> | ChangeEvent<HTMLElement>,
-  ) => {
+  const preventDefault = (event: DragEvent<HTMLElement> | ChangeEvent<HTMLElement>) => {
     event.preventDefault()
     event.stopPropagation()
   }
@@ -104,9 +97,7 @@ export default function FileInput({
     setIsDragOver(true)
   }
 
-  const handleDragOverEnd = (
-    event: DragEvent<HTMLElement> | ChangeEvent<HTMLElement>,
-  ) => {
+  const handleDragOverEnd = (event: DragEvent<HTMLElement> | ChangeEvent<HTMLElement>) => {
     preventDefault(event)
     setIsDragOver(false)
   }
@@ -121,6 +112,7 @@ export default function FileInput({
       }
 
       setValue(file)
+      return error
     }
   }
 
@@ -133,13 +125,37 @@ export default function FileInput({
         dataTransfer.items.add(file)
       }
       inputRef.current.files = dataTransfer.files
+      const inputEvent = new Event('change', { bubbles: true })
+      inputRef.current.dispatchEvent(inputEvent)
     }
+
     handleFileChange(dataTransfer.files)
   }
 
   const handleOnChange = (event: ChangeEvent<HTMLInputElement>) => {
     handleDragOverEnd(event)
-    handleFileChange(event.target.files)
+    const error = handleFileChange(event.target.files)
+    if (!!onChange && !error) {
+      onChange(event)
+    }
+  }
+
+  const resetState = () => {
+    setValue(null)
+    setErrorMessage(null)
+    setBlobSize(null)
+  }
+
+  const handleClear = () => {
+    const dataTransfer = new DataTransfer()
+    // Update the input
+    if (!errorMessage && inputRef.current) {
+      inputRef.current.files = dataTransfer.files
+      const inputEvent = new Event('change', { bubbles: true })
+      inputRef.current.dispatchEvent(inputEvent)
+    }
+
+    resetState()
   }
 
   const hasFile = !!value
@@ -153,20 +169,29 @@ export default function FileInput({
       onDragEnd={handleDragOverEnd}
       onDragLeave={handleDragOverEnd}
       onDrop={handleDrop}
-      className={
-        clsx(
-          'FileInputContainer',
-          isDragOver && 'FileInputContainer-dragOver',
-          hasFile && 'FileInputContainer-file',
-          !!errorMessage && 'FileInputContainer-error',
-          containerClassName,
-        )
-      }
+      className={clsx(
+        'FileInputContainer',
+        isDragOver && 'FileInputContainer-dragOver',
+        hasFile && 'FileInputContainer-file',
+        !!errorMessage && 'FileInputContainer-error',
+        containerClassName
+      )}
     >
       <HiddenInput id={inputId} ref={inputRef} onChange={handleOnChange} type="file" />
       <FileInputLabel htmlFor={inputId} className={clsx('FileInputLabel', className)}>
-        <FileStatus file={value} blobSize={blobSize} maxFileSize={maxFileSize} errorMessage={errorMessage} dragOver={isDragOver} />
+        <FileStatus
+          file={value}
+          blobSize={blobSize}
+          maxFileSize={maxFileSize}
+          errorMessage={errorMessage}
+          dragOver={isDragOver}
+        />
       </FileInputLabel>
+      {hasFile && (
+        <ClearInputButton onClick={handleClear}>
+          <StyledClearIcon />
+        </ClearInputButton>
+      )}
     </FileInputContainer>
   )
 }
